@@ -1,0 +1,960 @@
+
+---
+title: "Happiness and Commuting (SOEP)"
+author: "Anastasiia Apatenko (matriculation number: 143732)"
+date: "2024-08-30"
+output:
+  pdf_document:
+    toc: true
+    keep_tex: true
+  html_document:
+    toc: true
+    theme: cerulean
+    code_folding: hide
+    code_download: true
+    css: custom_style.css
+bibliography: Final_143732.bib
+csl: C:/R/final project/apa.csl
+link-citations: true
+always_allow_html: true
+knitr:
+  opts_chunk:
+    echo: true
+---
+
+
+```{r setup, include=FALSE}
+library(knitr)
+
+# Default to showing code in HTML
+opts_chunk$set(
+  echo = TRUE,           # Show code by default
+  message = FALSE,
+  warning = FALSE
+)
+
+# Conditionally hide code in PDF
+if (knitr::is_latex_output()) {
+  opts_chunk$set(echo = FALSE)
+}
+library(haven)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(writexl)
+library(plotly)
+
+
+```
+
+
+     
+# Introduction {.tabset}
+
+Understanding the relationship between happiness and commuting is a significant area of interest in social science research. Commuting, defined as the daily travel time to and from work, is an integral part of many individuals' lives, particularly in urban settings. Previous studies have highlighted that commuting time can impact various dimensions of well-being, including physical health, mental health, and overall life satisfaction. As cities grow and commuting times lengthen, investigating how commuting affects happiness becomes increasingly relevant.
+
+## SOEP data 
+<img src="https://www.diw.de/sixcms/media.php/diw_1.a.71.de/bild_contentbereich_galleria/soeptutorials_topics.jpg" 
+     style="float: left; margin-right: 15px; margin-bottom: 10px;" width="300"/>
+     
+The Socio-Economic Panel *(SOEP)* is a longitudinal survey that has been conducted annually since 1984 by the German Institute for Economic Research (DIW Berlin). It provides a rich, multi-dimensional dataset that includes detailed information on households and individuals in Germany, covering aspects such as income, employment, education, health, and life satisfaction. The SOEP is one of the largest and most comprehensive panel datasets available, allowing researchers to analyze the dynamic aspects of socio-economic conditions and behaviors over time. It is a valuable resource for studying trends and patterns within the German population, providing insights into how economic, social, and personal factors interact to shape individuals' lives and societal outcomes.
+
+## Definition of Key Terms
+
+In this study, ___Happiness___ is defined as the self-reported life satisfaction score, as measured in the Socio-Economic Panel (SOEP) dataset. ___Commuting___ refers to the total time an individual spends traveling from home to work and back, typically measured in minutes per day.
+___Life satisfaction___ is a subjective assessment of one's overall well-being and contentment with life. Life satisfaction was chosen as the measure of happiness because no other more suitable variables were available in the data sets accessible to us to describe the level of happiness.
+
+## Literature Review
+
+The existing literature indicates that commuting has significant implications for an individual's subjective well-being, with various studies revealing both direct and indirect effects on happiness. Stutzer and Frey [@Stutzer2008] describe the "commuting paradox," where longer commuting times, despite potential financial or employment benefits, are consistently linked to lower levels of life satisfaction. This paradox underscores the psychological stress and reduced time for personal and social activities that longer commutes often entail. Kahneman et al. [@Kahneman2004] further emphasize the negative impact of commuting on daily well-being by using the Day Reconstruction Method (DRM) to categorize commuting as one of the least enjoyable daily activities. Their research shows that commuting significantly contributes to daily stress and overall dissatisfaction with life, underscoring its role in shaping daily experiences.
+
+Meier and Stutzer [@Meier2008] contribute to this discussion by exploring the broader context of time use and its influence on happiness. Although their study primarily investigates the benefits of volunteering, they note that time spent commuting can reduce opportunities for engaging in fulfilling activities, such as socializing or volunteering, which are crucial for maintaining happiness. This aligns with findings from Petrunoff et al. [@Petrunoff2017], who highlight the benefits of active commuting modes, such as walking or cycling, particularly in work settings. Their systematic review suggests that interventions encouraging active commuting can mitigate some of the negative impacts associated with longer or more stressful commutes, thus enhancing overall life satisfaction and reducing stress levels.
+
+Clark et al. [@Clark2019] delve deeper into the nuances of how different commuting modes affect subjective well-being. They found that individuals commuting by car tend to report lower happiness levels compared to those who walk or cycle, potentially due to the associated physical activity and exposure to more pleasant environments. Moreover, the study underscores the importance of perceived control over one's commuting method in influencing its impact on life satisfaction. This suggests that the ability to choose one's mode of transport, and thereby potentially reduce commute-related stress, plays a significant role in determining the overall well-being of commuters.
+
+Despite the extensive body of research on commuting and happiness, there remains a gap in understanding how various socio-economic and demographic factors, such as income, employment status, and geographic region, interact with commuting to affect happiness levels.
+
+## Data sets and Variables
+
+We had access to six datasets: gripstr.dta, hgen.dta, hl.dta, pequiv.dta, pgen.dta, and pl.dta. After thoroughly examining each dataset, I selected four that contained the necessary information for my analysis: __hgen.dta__, __pequiv.dta__, __pgen.dta__, and __pl.dta__. The datasets gripstr.dta and hl.dta were not included in the final analysis, as they did not contain the relevant variables for my research.
+
+The chosen datasets provided comprehensive data on employment status, household characteristics, life satisfaction, and educational background, which were crucial for understanding the relationships between life satisfaction and commuting behavior. However, it's important to note that some variables were not available due to restricted access. For instance, the residence information variable (l11101) in the pequiv.dta was inaccessible, which limited the analysis of certain aspects related to geographic and residential factors.
+
+
+__Variables included:__
+
+1. Age
+
+2. Gender
+
+3. Marital Status
+
+4. Number of persons in household
+
+5. Number of years of education
+
+6. Education with respect to High School
+
+7. Household income satisfaction
+
+8. Commuting distance 
+
+9. Commuting Frequency
+
+10. Commuting Time (Minutes)
+
+11. Monthly household income
+
+12. Employment Status
+
+
+Each variable in the datasets is available for different time periods. Some cover the whole duration of the SOEP study, from 1984 to 2020, while others are only available for specific years. As a result, I used the primary variables for the entire study period, but some detailed indicators are only available for shorter times.
+
+To handle the large amount of data, I also shortened the research period for some analyses. This made the data more manageable and helped focus on specific aspects of the study.
+
+Overall, this approach allowed me to analyze life satisfaction and commuting behavior in a clear and organized way, despite the challenges with data availability and size.
+
+## Hypotheses 
+
+Based on the literature review, I hypothesize that longer commuting times are associated with lower levels of happiness. Additionally, I claim that this relationship may vary depending on socio-economic factors such as income, employment status, and education.
+
+
+
+
+# Demographics Analysis {.tabset}
+To begin, we will examine the key demographic variables of SOEP data: ___age___, ___gender___, and ___marital status___. All of these variables are contained in the ___pequiv.dta___ database. These demographic factors are crucial as they provide foundational context for understanding the characteristics of the population under study. Analyzing these variables will help us identify patterns and correlations that may influence other aspects of the study, such as happiness and commuting time. Understanding the distribution and characteristics of these demographics allows us to better interpret the broader social and economic dynamics at play.
+
+
+
+## Average Age by Year
+
+### Age Distribution by Year
+
+This box plot effectively illustrates the distribution of the ages of respondents from 1984 to 2020. It provides a clear view of the ___minimum___ and ___maximum___ ages for each year, allowing for an easy identification of the age range over time. Additionally, the plot highlights the ___median___ age and showcases the variability in ages across different years.
+
+
+<center>
+```{r age, warning = FALSE, message = FALSE}
+
+pequiv_dem <- read_dta("C:/R/final project/data/pequiv.dta", col_select = c("cid", "hid", "pid", "syear", "d11101", "d11102ll", "d11104"))
+
+
+pequiv_dem_filter <- pequiv_dem %>%
+  rename(
+    `age` = d11101,
+    `gender` = d11102ll,
+    `marital status` = d11104
+  )
+
+pequiv_dem_filter <- pequiv_dem_filter %>%
+  mutate(age = as.numeric(age)) %>%
+  filter(age > 0)
+
+# Age Distribution
+ggplot(pequiv_dem_filter, aes(x = as.factor(syear), y = age)) + 
+  geom_boxplot(fill = "mediumseagreen", color = "black") +
+  labs(title = "Age Distribution by Year", x = "Year", y = "Age") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))  
+
+```
+</center>
+
+### Average Age by Year
+
+The graph shows fluctuations in the ___average___ age over the years. The line illustrates the general direction or trend of the average age, whether it is increasing, decreasing, or remaining stable.
+
+<center>
+```{r age_by_year, warning = FALSE, message = FALSE}
+average_age_by_year <- pequiv_dem_filter %>%
+  group_by(syear) %>%
+  summarize(average_age = mean(age, na.rm = TRUE))
+
+ggplot(average_age_by_year, aes(x = syear, y = average_age)) + 
+  geom_line(color = "tomato", linewidth = 0.2) +  
+  geom_point(color = "tomato", size = 2) +   
+  labs(title = "Average Age by Year", x = "Year", y = "Average Age") +
+  theme_minimal()
+```
+</center>
+
+Starting from 1990, the plot reveals a gradual increase in the mean age of respondents up until nearly the end of the 2010s. Notably, there is a significant drop in median age in 2010 compared to 2009, with the median age falling from approximately 42 to 35. Following this sharp decline, the median age has not risen above 36 in subsequent years, indicating a sustained trend of younger respondents in the more recent data. This shift may reflect broader demographic changes or shifts in the survey population over time.
+
+
+## Gender Distribution
+
+The histogram illustrates the gender distribution over time from 1984 to 2020.
+
+* The gender proportions exhibit fluctuations over the years, with noticeable variations in the ratio of males to females across different periods.
+* Significant shifts can be seen at certain points in time, such as the early 1990s and around 2000, reflecting changes in gender representation within the dataset.
+* Recent years show a more balanced gender distribution, with proportions converging towards equal representation.
+
+<center>
+```{r gender, warning = FALSE, message = FALSE}
+pequiv_dem_filter <- pequiv_dem_filter %>%
+  mutate(gender = as.numeric(gender),
+         syear = as.numeric(syear)) %>%
+  filter(gender > 0)
+
+pequiv_dem_filter <- pequiv_dem_filter %>%
+  mutate(gender = factor(gender, levels = c(1, 2), labels = c("Male", "Female")))
+
+gender_proportion_by_year <- pequiv_dem_filter %>%
+  group_by(syear, gender) %>%
+  summarise(count = n(), .groups = 'drop') %>%
+  group_by(syear) %>%
+  mutate(total = sum(count),
+         proportion = count / total * 100)
+
+ggplot(gender_proportion_by_year, aes(x = syear, y = proportion, color = gender, group = gender)) + 
+  geom_line(linewidth = 0.2) +
+  geom_point(size = 2) +
+  labs(title = "Gender Distribution Over Time", x = "Year", y = "Proportion (%)") +
+  scale_color_manual(values = c("Male" = "skyblue", "Female" = "salmon"),
+                     name = "Gender") + 
+  theme_minimal()
+```
+</center>
+
+## Marital Status Distribution
+
+The bar plot shows the distribution of marital statuses across different years. Each color represents a different year, and the height of the bars represents the proportion of respondents in each marital status category.
+
+* The majority of respondents are married, with a consistent proportion of over 60% across the years.
+* The proportion of single individuals is the second highest, followed by widowed, divorced, and separated individuals.
+* We can also observe that since the mid-2000s, the popularity of divorces has increased, while the number of marriages has significantly declined. 
+* Similarly, the number of single individuals began to rise sharply around 2010.
+
+These trends may point to evolving cultural, social, and economic factors influencing people's choices regarding marriage and relationships.
+
+<center>
+```{r marital_status, warning = FALSE, message = FALSE}
+pequiv_dem_filter <- pequiv_dem_filter %>%
+  filter(`marital status` > 0) %>%  
+  mutate(`marital status` = factor(`marital status`,  
+                                   levels = 1:5, 
+                                   labels = c("Married", "Single", "Widowed", "Divorced", "Separated")))
+
+stats_by_year_marital_status <- pequiv_dem_filter %>%
+  group_by(syear, `marital status`) %>%
+  summarise(count = n(), .groups = 'drop')
+
+
+
+stats_by_year_marital_status <- stats_by_year_marital_status %>%
+  group_by(syear) %>%
+  mutate(total = sum(count),
+         proportion = count / total * 100)
+
+ggplot(stats_by_year_marital_status, aes(x = `marital status`, y = proportion, fill = factor(syear))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Marital Status Distribution by Year (Proportion)", x = "Marital Status", y = "Proportion (%)", fill = "Year") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.text = element_text(size = 6),  
+        legend.title = element_text(size = 6))
+```
+</center>
+
+
+# Household and individual income {.tabset}
+
+I analyzed household income data to explore how average monthly household income varies with the number of household members and how income per person in a household changes over the years. These analyses provide insights into income distribution patterns and their potential impact on commuting behaviors and overall happiness.
+
+## Average monthly household income  
+
+Here I wanted to merge and clean household income and size data, then visualize how average monthly household income varies with the number of household members across the years. But the data was so vast and there there more than 1 million variables. So I decided to choose only years from 2018 to 2020. The plot helps to identify trends and patterns in income distribution relative to household size during these years.
+The facet wrap allows for a comparative view of income trends across the specified years, helping to identify any significant changes or consistent patterns.
+
+__Main observations:__
+
+The analysis of the average monthly household income in relation to the number of household members from 2018 to 2020 reveals several interesting trends. The data shows that household income increases as the number of family members grows, but this trend only holds up to a certain point. Specifically, the average income rises steadily with household size until it reaches five members. Beyond this threshold, the income begins to decline gradually, suggesting that additional family members may lead to diminishing financial returns, possibly due to increased living costs or resource allocation challenges.
+
+However, the trend takes a surprising turn when the number of household members exceeds nine. At this point, there is a sharp increase in average household income, which could indicate the presence of additional income earners in larger households or economies of scale that benefit very large families. Following this unexpected spike, the income drops sharply again, highlighting potential volatility and financial strain in extremely large households.
+
+These findings suggest that while larger households may benefit from multiple income sources, they also face increased financial pressures that can impact their overall economic stability. 
+
+<center>
+```{r hh_income, warning = FALSE, message = FALSE}
+#1
+hgen_hhinc_data <- read_dta("C:\\R\\final project\\data\\hgen.dta", col_select = c("cid", "hid", "syear", "hghinc"))
+
+hgen_hhinc_data <- hgen_hhinc_data %>%
+  rename(
+    `monthly_hhinc` = hghinc
+  )
+#2
+pl_hhinc_data <- read_dta("C:\\R\\final project\\data\\pl.dta", col_select = c("cid", "hid", "pid", "syear", "plh0175"))
+
+pl_hhinc_data <- pl_hhinc_data %>%
+  rename(
+    `hhinc_sat` = plh0175
+  )
+#3
+pequiv_hhsize_data <- read_dta("C:\\R\\final project\\data\\pequiv.dta", col_select = c("cid", "hid", "pid", "syear", "d11106"))
+
+pequiv_hhsize_data <- pequiv_hhsize_data %>%
+  rename(
+    `hh_size` = d11106,
+  )
+
+pl_hgen_pequiv_hhinc <- full_join(hgen_hhinc_data, pl_hhinc_data, by = c("hid", "syear"))
+pl_hgen_pequiv_hhinc <- full_join(pl_hgen_pequiv_hhinc, pequiv_hhsize_data, by = c("hid", "syear"))
+
+pl_hgen_pequiv_hhinc <- pl_hgen_pequiv_hhinc %>%
+  mutate(across(everything(), ~ as.numeric(as.character(.))))
+
+pl_hgen_pequiv_hhinc <- na.omit(pl_hgen_pequiv_hhinc)
+
+pl_hgen_pequiv_hhinc_filter <- pl_hgen_pequiv_hhinc %>% filter(hhinc_sat >= 0, monthly_hhinc >= 0, hh_size >= 0) 
+
+pl_hgen_pequiv_hhinc_18_20 <- pl_hgen_pequiv_hhinc_filter %>% filter(syear <= 2020 & syear >= 2018)
+
+ggplot(pl_hgen_pequiv_hhinc_18_20, aes(x = hh_size, y = monthly_hhinc)) +
+  stat_summary(fun = "mean", geom = "line", color = "cornflowerblue") +  
+  stat_summary(fun = "mean", geom = "point", color = "cornflowerblue") +   
+  labs(title = "Average monthly household income depending on the number of family members",
+       x = "Number of HH members",
+       y = "Mean monthly income of HH (EUR)") +
+  facet_wrap(~ syear) + 
+  theme_minimal()
+
+```
+</center>
+
+
+## Average Income Per Person in household
+
+To further analyze household income dynamics, I calculated the income per household member to understand the average income per individual in each household. This calculation was necessary because the available dataset did not provide a variable for monthly individual income. By deriving this metric, I could more accurately assess the financial situation on a per-person basis within households.
+
+__Main observations:__
+
+The resulting plot displays the trend of average income per person from 2018 to 2020. The graph shows a gradual increase in the average income per person over the years, indicating an overall improvement in individual economic conditions within households. This upward trend suggests that household incomes are rising in a way that benefits each member more significantly over time.
+
+A particularly notable observation from the graph is the marked increase in per capita income in 2001. This significant jump may reflect broader economic changes, policy impacts, or shifts in the labor market that particularly benefitted households during that year. 
+
+<center>
+```{r p_income, warning = FALSE, message = FALSE}
+#1
+hgen_hhinc_data <- read_dta("C:/R/final project/data/hgen.dta", col_select = c("cid", "hid", "syear", "hghinc"))
+
+hgen_hhinc_data <- hgen_hhinc_data %>%
+  rename(
+    `monthly_hhinc` = hghinc
+  )
+
+#2
+pequiv_hhsize_data <- read_dta("C:/R/final project/data/pequiv.dta", col_select = c("cid", "hid", "pid", "syear", "d11106"))
+
+pequiv_hhsize_data <- pequiv_hhsize_data %>%
+  rename(
+    `hh_size` = d11106
+  )
+hgen_pequiv_hhinc <- full_join(hgen_hhinc_data, pequiv_hhsize_data, by = c("hid", "syear"))
+
+
+hgen_pequiv_hhinc <- hgen_pequiv_hhinc %>%
+  mutate(across(everything(), ~ as.numeric(as.character(.))))
+
+hgen_pequiv_hhinc <- na.omit(hgen_pequiv_hhinc)
+
+hgen_pequiv_hhinc_filter <- hgen_pequiv_hhinc %>% filter( monthly_hhinc >= 0, hh_size >= 0) 
+
+hgen_pequiv_hhinc_filter <- hgen_pequiv_hhinc_filter %>%
+  mutate(
+    income_per_person = monthly_hhinc / hh_size
+  )
+
+
+income_per_person_by_year <- hgen_pequiv_hhinc_filter %>%
+  group_by(syear) %>%
+  summarise(
+    income_per_person_by_year = mean(income_per_person, na.rm = TRUE)
+  )
+
+ggplot(income_per_person_by_year, aes(x = syear, y = income_per_person_by_year)) + 
+  geom_line(color = "mediumseagreen", linewidth = 0.2) + 
+  geom_point(color = "mediumseagreen", size = 2) + 
+  labs(title = "Average Income Per Person in HH by Year",
+       x = "Year",
+       y = "Average Income Per Person (EUR)") +
+  theme_minimal()
+```
+</center>
+
+# Education and Employment {.tabset}
+
+Education generally contributes to higher happiness through improved financial stability, better health, and enhanced social and psychological benefits. It often leads to greater job satisfaction and a sense of achievement.
+
+Education plays a crucial role in shaping an individual's life opportunities and overall well-being. This part explores the relationship between educational attainment and employment status, as well as their combined impact on life satisfaction.
+
+## Average Years of Education by Year
+
+The graph illustrates the trend in average years of education from 1984 to 2020.
+
+__Main observations:__
+
+The graph shows a clear upward trend in the average years of education from 1980 to around 2010,  followed by fluctuations in the subsequent years. This indicates a general increase in the number of years individuals spend in education over the 40-year period.
+
+
+<center>
+```{r edu_years, warning = FALSE, message = FALSE}
+pequiv_edu_data <- read_dta("C:/R/final project/data/pequiv.dta", col_select = c("cid", "hid", "pid", "syear", "d11108", "d11109"))
+
+pequiv_edu_data <- pequiv_edu_data %>%
+  rename(
+    `education_HS` = d11108,
+    `years_of_Education` = d11109
+  )
+
+pequiv_edu_data_filter <- pequiv_edu_data %>%
+  mutate(education_HS = as.numeric(education_HS), years_of_Education = as.numeric(years_of_Education)) %>%
+  filter(years_of_Education > 0, education_HS > 0)
+
+average_years_of_education_by_year <- pequiv_edu_data_filter %>%
+  group_by(syear) %>%
+  summarize(Mean_Years_of_Education = mean(years_of_Education, na.rm = TRUE))
+
+# 349,070 entries
+ggplot(average_years_of_education_by_year, aes(x = syear, y = Mean_Years_of_Education)) +
+  geom_line(color = "mediumseagreen", linewidth = 0.2) +  
+  geom_point(color = "mediumseagreen", size = 2) +   
+  labs(title = "Average Years of Education by Year",
+       x = "Year",
+       y = "Average Years of Education") +
+  theme_minimal()
+
+```
+</center>
+
+## Average Years of Education by Year and Education Level
+
+The faceted plot highlights distinct trends for each educational level, emphasizing the different trajectories and growth patterns.
+
+__Main observations:__
+
+For ___"Less than HS,"___ there is a noticeable increase followed by stabilization, indicating efforts to enhance basic education access.
+
+The ___"High School"___ category shows consistent growth, reflecting increased retention and completion rates.
+
+The ___"More than HS"___ category shows a pronounced upward trend, emphasizing the growing demand for advanced education and professional qualifications.
+
+The gap between the average years of education for those with "More than HS" and those with only "High School" education has widened over time. This suggests increasing stratification based on educational attainment, which could have implications for income inequality, employment opportunities, and social mobility.
+
+<center>
+```{r years_level_edu, warning = FALSE, message = FALSE}
+
+average_education_HS_by_year <- pequiv_edu_data_filter %>%
+  group_by(syear, education_HS) %>%
+  summarize(Mean_Years_of_Education = mean(years_of_Education, na.rm = TRUE))
+
+ggplot(average_education_HS_by_year, aes(x = syear, y = Mean_Years_of_Education, color = as.factor(education_HS))) +
+  geom_line(linewidth = 0.2) +
+  geom_point(size = 1.1) +
+  labs(title = "Average Years of Education by Year and Education Level",
+       x = "Year",
+       y = "Average Years of Education",
+       color = "Education Level") +
+  scale_color_manual(values = c("1" = "tomato", "2" = "mediumseagreen", "3" = "cornflowerblue"),
+                     labels = c("1" = "Less than HS", "2" = "High School", "3" = "More than HS")) +
+  theme_minimal()
+
+```
+</center>
+
+This is a _faceted plot_, which divides the data into three panels, each corresponding to one of the educational levels, allowing for a detailed examination of trends within each category over the specified years.
+
+<center>
+```{r years_level_edu_2, warning = FALSE, message = FALSE}
+ggplot(average_education_HS_by_year, aes(x = syear, y = Mean_Years_of_Education)) +
+  geom_line(color = "mediumseagreen", linewidth = 0.2) +
+  geom_point(color = "mediumseagreen", size = 1.1) +
+  labs(title = "Average Years of Education by Year and Education Level",
+       x = "Year",
+       y = "Average Years of Education") +
+  facet_wrap(~ education_HS, scales = "free_y", labeller = as_labeller(c(
+    `1` = "Less than HS",
+    `2` = "High School",
+    `3` = "More than HS"
+  ))) +
+  theme_minimal()
+```
+</center>
+
+## Education and employment status
+
+This is a violin plot showing the distribution of years of education across different employment statuses, considered in ___pgen.dta___.
+
+
+__Main observations:__
+
+  1. *Full-Time Employment*: Individuals with full-time employment generally have a higher level of education. The plot is more concentrated around higher years of education, with a notable peak at around 15 years, indicating that many individuals in this category have some college education or higher.
+  
+  2. *Regular Part-Time and Vocational Training*: These groups show similar patterns, with a slight peak around 12-15 years of education. This suggests that many individuals in these categories have completed high school and some have attended college or vocational training programs.
+  
+  3. *Marginal/Irregular Part-Time and Not Employed*: These groups have a broader distribution of years of education, with many individuals having less than a high school education and others having more. This spread indicates a wide range of educational backgrounds among these individuals.
+  
+  4. *Sheltered Workshop*: This group shows a unique distribution, with most individuals having fewer years of education, typically less than high school.
+
+```{r edu_empl, warning = FALSE, message = FALSE}
+pequiv_edu <- read_dta("C:/R/final project/data/pequiv.dta", col_select = c("cid", "hid", "pid", "syear", "d11109"))
+
+pequiv_edu <- pequiv_edu %>%
+  rename(
+    `years_of_Education` = d11109
+  )
+
+pgen_empl <- read_dta("C:/R/final project/data/pgen.dta", col_select = c("cid", "hid", "pid", "syear", "pgemplst"))
+
+pequiv_pgen_edu <- full_join(pequiv_edu, pgen_empl, by = c("pid", "hid", "cid", "syear"))
+
+pequiv_pgen_edu <- na.omit(pequiv_pgen_edu) %>% 
+  filter(years_of_Education >= 0, pgemplst >= 0)
+
+pequiv_pgen_edu <- pequiv_pgen_edu %>%
+  mutate(pgemplst = factor(pgemplst, levels = 1:6, 
+                           labels = c("Full-Time Employment", 
+                                      "Regular Part-Time", 
+                                      "Vocational Training", 
+                                      "Marginal/Irregular Part-Time", 
+                                      "Not Employed", 
+                                      "Sheltered Workshop")))
+
+ggplot(pequiv_pgen_edu, aes(x = pgemplst, y = years_of_Education)) +
+  geom_violin(fill = "tomato", color = "black", alpha = 0.7) +
+  labs(
+    title = "Years of Education by Employment Status",
+    x = "Employment Status",
+    y = "Years of Education"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Life satisfaction and employment status
+
+This box plot showing the distribution of life satisfaction scores (on a scale from 0 to 10) across the same employment statuses. 
+
+__Main observations:__
+
+__Not Employed and Sheltered Workshop groups__ generally report lower life satisfaction, with median scores slightly lower than the employed groups. The range of scores is wider, suggesting greater variability in life satisfaction among individuals who are not employed or in sheltered workshops. Some individuals report high life satisfaction, while others report very low satisfaction.
+
+The gap in education levels between different employment categories (e.g., full-time vs. not employed) suggests a stratification in employment opportunities based on educational attainment. Those with higher education levels are more likely to secure stable employment, which is associated with higher life satisfaction.
+
+
+<center>
+```{r empl_lifesat, warning = FALSE, message = FALSE}
+pequiv_com <- read_dta("C:/R/final project/data/pequiv.dta", col_select = c("cid", "hid", "pid", "syear", "p11101"))
+
+pequiv_com <- pequiv_com %>% filter_all(all_vars(. >= 0)) %>%
+  rename(
+    `lifesat` = p11101
+  )
+
+#381917
+pgen_pequiv_job <- full_join(pgen_empl, pequiv_com, by = c("pid", "hid", "cid", "syear"))
+
+#363978
+pgen_pequiv_job <- na.omit(pgen_pequiv_job) %>% 
+  filter(pgemplst >= 0, lifesat >= 0)
+
+
+pgen_pequiv_job <- pgen_pequiv_job %>%
+  mutate(pgemplst = factor(pgemplst, levels = 1:6, 
+                           labels = c("Full-Time Employment", 
+                                      "Regular Part-Time", 
+                                      "Vocational Training", 
+                                      "Marginal/Irregular Part-Time", 
+                                      "Not Employed", 
+                                      "Sheltered Workshop")))
+
+# Boxplot of life satisfaction by employment status
+ggplot(pgen_pequiv_job, aes(x = pgemplst, y = lifesat)) +
+  geom_boxplot(fill = "cornflowerblue", color = "black", alpha = 0.7) +
+  labs(
+    title = "Life Satisfaction by Employment Status (1984-2020)",
+    x = "Employment Status",
+    y = "Life Satisfaction (0-10)"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+</center>
+
+
+
+# Commuting {.tabset}
+
+This section explores the relationship between commuting patterns and overall life satisfaction. By examining various metrics such as commuting distance, time, and frequency over different years, we can gain a deeper understanding of how changes in commuting behavior might influence happiness.
+
+## Mean Commuting Distance and Mean Commuting Time
+
+The bar plot compares two different metrics over several years: Mean Commuting Distance (in kilometers) and Mean Commuting Time (in minutes). Each bar represents a different year, showing both metrics on the same graph using two different scales.
+
+__Main observations:__
+
+Over the years shown (2015, 2017, 2019 and 2021), we see variations in both commuting distance and time.
+For instance, the mean commuting distance increased from 2015 to 2017 and started slightly decreasing after, while the mean commuting time remained almost constant across these years.
+
+Since 2017, commuting has decreased, likely due to the increase in remote work and online job opportunities. However, for those who continued to commute, the time spent traveling remained significant, possibly due to heavy traffic in cities. 
+
+<center>
+```{r dist_time, warning = FALSE, message = FALSE}
+
+pl_com <- read_dta("C:/R/final project/data/pl.dta", col_select = c("cid", "hid", "pid", "syear", "plb0592", "plb0591", "plb0590"))
+
+pl_com <- pl_com %>%
+  rename(
+    `comtime` = plb0592,
+    `comfreq` = plb0591,
+    `comdist` = plb0590
+  )
+pl_com <- pl_com %>% 
+  filter(comtime >= 0, comfreq >= 0, comdist >= 0) 
+
+# Calculating statistical measures by year
+commuting_stats_by_year <- pl_com %>%
+  group_by(syear) %>%  
+  summarise(
+    Mean_Distance = mean(comdist, na.rm = TRUE),  
+    Median_Distance = median(comdist, na.rm = TRUE),  
+    Range_Distance = list(range(comdist, na.rm = TRUE)),  
+    
+    Mean_Time = mean(comtime, na.rm = TRUE), 
+    Median_Time = median(comtime, na.rm = TRUE),   
+    Range_Time = list(range(comtime, na.rm = TRUE)),  
+    
+    Mode_Frequency = names(sort(table(comfreq), decreasing = TRUE))[1]  # Calculate mode of commuting frequency
+  )
+
+
+ggplot(commuting_stats_by_year, aes(x = syear)) +
+  geom_col(aes(y = Mean_Distance, fill = "Mean Distance (km)"), alpha = 0.6, width = 1, position = position_dodge(width = 0.5)) +
+  geom_col(aes(y = Mean_Time, fill = "Mean Time (min)"), alpha = 0.9, width = 1, position = position_dodge(width = 0.5)) +
+  labs(title = "Mean Distance and Commuting Time by Year",
+       x = "Year",
+       y = "Commuting Distance (km)") +
+  scale_y_continuous(sec.axis = sec_axis(~., name = "Commuting Time (min)")) +
+  scale_fill_manual(values = c("Mean Distance (km)" = "cornflowerblue", "Mean Time (min)" = "tomato"), name = "Values") +
+  theme_minimal() +
+  theme(axis.title.y = element_text(color = "cornflowerblue"),
+        axis.title.y.right = element_text(color = "tomato"),
+        legend.position = "bottom")
+
+
+```
+</center>
+
+## Commuting Distance vs. Time by Frequency of Commuting and Year
+
+This scatter plot matrix visualizes the relationship between commuting distance (in km) and commuting time (in minutes) for different commuting frequencies and years.
+The different panels represent different years (2015, 2017, 2019), and the points are colored based on commuting frequency.
+
+__Main observations:__
+
+* As expected, there is a general trend where longer commuting distances correspond to longer commuting times.
+* The black dashed line represents the mean commuting time for each distance category, and it appears that several people commute long distances relatively quickly (likely due to faster transportation means).
+* High-frequency commuters (red dots) tend to have more consistent commuting times, even at longer distances, especially in 2019, compared to lower-frequency commuters (blue and green dots).
+
+<center>
+```{r dist_time_by_freq, warning = FALSE, message = FALSE}
+ggplot(pl_com, aes(x = comdist, y = comtime)) +
+  geom_point(aes(color = as.factor(comfreq)), alpha = 0.4) +
+  geom_smooth(method = "lm", se = FALSE, color = "black", linetype = "dashed", linewidth = 0.6) +
+  facet_grid(comfreq ~ syear) +  
+  labs(title = "Commuting Distance vs. Time by Frequency of Commuting and Year",
+       x = "Distance (km)",
+       y = "Commuting Time (min)",
+       color = "Commuting Frequency") +
+  scale_color_manual(
+    values = c("1" = "tomato", "2" = "mediumseagreen", "3" = "cornflowerblue"), 
+    labels = c(
+      "1" = "Several times a week",
+      "2" = "Once a week",
+      "3" = "Less"
+    )
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+</center>
+
+## Interactive Scatter Plot of Commuting Time vs. Life Satisfaction by Year
+
+The scatter plot illustrates the relationship between commuting time (in minutes) and life satisfaction across three different years: 2015, 2017, and 2019. During the data preparation process, the initial dataset of circa 400,000 respondents was significantly reduced, leaving only 354 respondents for analysis. 
+
+__Main observations:__
+
+* Across all three years, life satisfaction scores range from 0 to 10. The distribution is somewhat consistent, with a majority of scores falling between 4 and 10. 
+
+* Over the years, there is a consistent observation that moderate commuting times (under 100 minutes) are associated with higher life satisfaction scores, which generally range from 6 to 8.
+
+* A noticeable trend is the increase in lower life satisfaction scores among those with longer commuting times, especially in 2019. 
+
+<center>
+```{r time_lifesat, warning = FALSE, message = FALSE}
+pl_pequiv_comtime_sat <- full_join(pl_com, pequiv_com, by = c("pid", "hid", "cid", "syear"))
+
+pl_pequiv_comtime_sat <- na.omit(pl_pequiv_comtime_sat)
+
+
+pl_pequiv_comtime_sat <- pl_pequiv_comtime_sat %>%
+  mutate(across(where(is.labelled), ~ as.numeric(as.character(.))))
+
+# Spliting the data by 'syear'
+pl_pequiv_comtime_sat_split <- split(pl_pequiv_comtime_sat, pl_pequiv_comtime_sat$syear)
+
+library(plotly)
+
+# Defining colors for each year
+colors <- c('2015' = 'cornflowerblue', '2017' = 'mediumseagreen', '2019' = 'tomato')
+
+# Creating individual plots for each year
+plots <- lapply(names(pl_pequiv_comtime_sat_split), function(year) {
+  plot_ly(
+    data = pl_pequiv_comtime_sat_split[[year]], 
+    x = ~comtime, 
+    y = ~lifesat, 
+    type = 'scatter', 
+    mode = 'markers',
+    marker = list(size = 10, color = colors[year],
+                  line = list(color = 'black', width = 0.5)),
+    name = paste("Year:", year) 
+  ) %>%
+    layout(
+      title = paste("Year:", year),
+      xaxis = list(title = "Commuting Time (min)", 
+                   titlefont = list(size = 10)),
+      yaxis = list(title = "Life Satisfaction")
+    )
+})
+
+# Combineing plots into a subplot
+subplot(
+  plots[[1]], # 2015
+  plots[[2]], # 2017
+  plots[[3]], # 2019
+  nrows = 1, # Arrange in a single row
+  shareX = TRUE, 
+  shareY = TRUE, 
+  titleX = TRUE, 
+  titleY = TRUE, 
+  margin = 0.05 
+) %>%
+  layout(
+    title = "Interactive Scatter Plot of Commuting Time vs. Life Satisfaction by Year",
+    showlegend = TRUE,
+    legend = list(
+      font = list(size = 10)
+  ))
+
+```
+</center>
+
+This correlation proves the plot´s results and shows the absence of almost any *direct* connection between commuting time and life satisfaction.
+
+<center>
+```{r cor_time_lifesat, warning = FALSE, message = FALSE}
+cor_time_lifesat <- cor(pl_pequiv_comtime_sat$comtime, pl_pequiv_comtime_sat$lifesat, use = "complete.obs")
+print(paste("Correlation coefficient of life satisfaction and commuting time:", cor_time_lifesat))
+```
+</center>
+
+
+The analysis of commuting patterns over the years reveals several important trends. 
+
+    * First, the decrease in commuting distances post-2017 likely reflects the growing adoption of remote work, yet commuting time has remained largely unchanged, highlighting persistent inefficiencies in transportation. 
+    
+    * Second, frequent commuters tend to have more predictable and consistent commuting times, suggesting that experience or access to better transport options plays a role in managing commutes effectively. 
+    
+    * Finally, while longer commutes can negatively impact life satisfaction, the relationship is complex and likely influenced by various external factors.
+
+These insights emphasize the importance of understanding the broader context of commuting behaviors and their impact on well-being. 
+
+
+# Income and life satisfaction {.tabset}
+
+In a previous section, I examined household income and individual income per family member, observing a steady increase in both over nearly 40 years. Building on these findings, this part delves deeper into the relationship between individual income and life satisfaction. Understanding how personal financial stability influences well-being can provide valuable insights into the broader socioeconomic factors that contribute to happiness and overall quality of life. 
+This analysis aims to explore whether rising incomes are consistently linked to higher levels of life satisfaction.
+
+## Correlation between household income and life satisfaction
+This correlation suggests that increasing household income can contribute to improved life satisfaction, but it is not the sole factor. 
+
+<center>
+```{r cor_hhincome_sat_lifesat, warning = FALSE, message = FALSE}
+
+pequiv_lifesat <- read_dta("C:/R/final project/data/pequiv.dta", col_select = c("cid", "hid", "pid", "syear", "p11101"))
+
+pequiv_lifesat <- pequiv_lifesat %>% 
+  rename(
+    life_sat = p11101
+  )
+  
+# Merging the two datasets by pid and syear
+pl_pequiv_sat <- full_join(pl_hhinc_data, pequiv_lifesat, by = c("pid", "hid", "cid", "syear"))
+
+pl_pequiv_sat <- na.omit(pl_pequiv_sat)
+
+pl_pequiv_sat <- pl_pequiv_sat %>%
+  filter_all(all_vars(. >= 0))
+
+
+correlation_incsat_lifesat <- round(cor(pl_pequiv_sat$life_sat, pl_pequiv_sat$hhinc_sat, use = "complete.obs"), 3)
+
+print(paste("Correlation coefficient between satisfaction with hausehold income and overall life satisfaction:", correlation_incsat_lifesat))
+```
+
+## Correlation between Overall Life Satisfaction and Satisfaction With Personal Income by Year
+
+The provided graph illustrates the correlation between overall life satisfaction and satisfaction with personal income from 1984 to 2020. 
+
+Post-1990, there is a decline in the correlation, followed by several fluctuations. The decline in the correlation from the mid-2000s onward suggests that the association between life satisfaction and income satisfaction became weaker over time. This could imply that factors other than income satisfaction may have started to play a more significant role in determining overall life satisfaction.
+
+```{r pincsat_lifesat, warning = FALSE, message = FALSE}
+pl_pequiv_sat_cor <- pl_pequiv_sat %>%
+  group_by(syear) %>%
+  summarise(
+    Correlation = cor(life_sat, hhinc_sat, use = "complete.obs")
+  )
+
+ggplot(pl_pequiv_sat_cor, aes(x = syear, y = Correlation)) +
+  geom_line(color = "cornflowerblue", linewidth = 0.2) +
+  geom_point(color = "cornflowerblue", size = 2) +
+  labs(title = "Correlation between Overall Life Satisfaction and Satisfaction With Personal Income by Year",
+       x = "Year",
+       y = "Correlation Coefficient") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 10) ) +
+  scale_x_continuous(breaks = seq(min(pl_pequiv_sat_cor$syear), max(pl_pequiv_sat_cor$syear), by = 2)) 
+
+
+```
+</center>
+
+The "Comparison of Mean Per Capita Income and Life Satisfaction by Year" graph compares the trends in mean per capita income and mean life satisfaction over time, illustrating their separate trajectories and relative scales.
+
+The parallel increase in both income and life satisfaction suggests a positive correlation between financial well-being and overall happiness. However, the less pronounced rise in life satisfaction compared to income growth indicates diminishing returns. ___After a certain point, additional income may have a reduced impact on life satisfaction.___
+<center>
+```{r pinc_lifesat, warning = FALSE, message = FALSE}
+pequiv_hhsize_data <- read_dta("C:/R/final project/data/pequiv.dta", col_select = c("cid", "hid", "pid", "syear", "d11106", "d11107","p11101"))
+
+pequiv_hhsize_data <- pequiv_hhsize_data %>%
+  rename(
+    `hh_size` = d11106,
+    `hh_child` = d11107,
+    `life_sat` = p11101
+  )
+
+hgen_pequiv_merged <- full_join(hgen_hhinc_data, pequiv_hhsize_data, by = c("cid", "hid", "syear"))
+
+hgen_pequiv_merged <- na.omit(hgen_pequiv_merged)
+hgen_pequiv_merged <- hgen_pequiv_merged %>% filter(monthly_hhinc >= 0, hh_size > 0, hh_child >= 0, life_sat >= 0) %>% 
+  filter(hh_size > hh_child)
+
+# Calculating Per Capita Household Income
+hgen_pequiv_merged <- hgen_pequiv_merged %>%
+  mutate(
+    per_capita_income = monthly_hhinc / (hh_size - hh_child)
+  )
+
+# Calculating the mean per capita income and life satisfaction by year
+hgen_pequiv_mean <- hgen_pequiv_merged %>%
+  group_by(syear) %>%
+  summarize(
+    mean_per_capita_income = round(mean(per_capita_income, na.rm = TRUE), 1),
+    mean_life_sat = round(mean(life_sat, na.rm = TRUE), 1)
+  )
+
+# mean per capita income and mean life satisfaction by year
+scale_factor <- max(hgen_pequiv_mean$mean_per_capita_income, na.rm = TRUE) / max(hgen_pequiv_mean$mean_life_sat, na.rm = TRUE)
+
+# mean per capita income and mean life satisfaction by year
+ scale_factor <- max(hgen_pequiv_mean$mean_per_capita_income) / max(hgen_pequiv_mean$mean_life_sat)
+ 
+  ggplot(hgen_pequiv_mean, aes(x = syear)) +
+   geom_line(aes(y = mean_per_capita_income, color = "Mean Per Capita Income"), linewidth = 0.2) +
+   geom_point(aes(y = mean_per_capita_income, color = "Mean Per Capita Income"), size = 1.6) +
+   geom_line(aes(y = mean_life_sat * scale_factor, color = "Mean Life Satisfaction"), linewidth = 0.2) +
+   geom_point(aes(y = mean_life_sat * scale_factor, color = "Mean Life Satisfaction"), size = 1.6) +
+   scale_y_continuous(
+     name = "Mean Per Capita Income",
+     sec.axis = sec_axis(~ . / scale_factor, name = "Mean Life Satisfaction")
+   ) +
+   labs(
+     title = "Comparison of Mean Per Capita Income and Life Satisfaction by Year",
+     x = "Year",
+     color = "Metrics"
+   ) +
+   theme_minimal() +
+   scale_color_manual(values = c("Mean Per Capita Income" = "cornflowerblue", "Mean Life Satisfaction" = "tomato"))
+```
+</center>
+
+A correlation coefficient of 0.465 indicates a moderate positive relationship between the two variables in question. It suggests that there is a moderate tendency for higher satisfaction with personal income to be associated with higher overall life satisfaction, but it also indicates that other factors may be contributing to overall life satisfaction.
+<center>
+```{r cor_pinc_lifesat, warning = FALSE, message = FALSE}
+  cor_pinc_lifesat <- round(cor(hgen_pequiv_mean$mean_per_capita_income, hgen_pequiv_mean$mean_life_sat, use = "complete.obs"), 3)
+  print(paste("Correlation coefficient of life satisfaction and commuting time:", cor_pinc_lifesat))
+```
+</center>
+
+The analysis of income and life satisfaction data over several decades reveals a nuanced relationship between financial well-being and happiness. While income growth is positively correlated with increased life satisfaction, the relationship is not absolute. The correlation between income satisfaction and overall life satisfaction has declined over time, suggesting the growing importance of non-financial factors in shaping well-being. These findings highlight the complexity of happiness, where financial security is necessary but not sufficient.
+
+# Conclusion
+
+The analysis of the relationship between happiness (measured as life satisfaction) and commuting, as well as other socio-economic factors, reveals a complex interplay of variables that influence individual well-being. 
+
+__Main findings:__
+
+* __Commuting and Happiness__: Consistent with the literature, longer commuting times are generally associated with lower levels of life satisfaction. The analysis reveals that individuals with longer commuting distances tend to report lower happiness levels. This supports the "commuting paradox" identified in previous studies, where the negative impact of longer commutes on well-being often outweighs the potential benefits of better employment opportunities or higher income associated with longer distances.
+
+* __Income and Happiness__: The analysis of income data highlights a moderate positive correlation between household income and life satisfaction, suggesting that financial stability contributes to happiness. However, the diminishing returns observed indicate that beyond a certain point, additional income has a reduced impact on life satisfaction. This finding aligns with the notion that while income is crucial for well-being, it is not the sole determinant of happiness. Interestingly, when commuting is factored in, individuals with higher incomes and longer commutes do not necessarily report higher happiness levels, emphasizing the complex trade-offs between financial benefits and the time costs of commuting.
+
+* __Education and Employment__: Higher educational attainment is generally associated with higher life satisfaction, as it often leads to better employment opportunities and financial stability. This analysis shows that individuals with more years of education are more likely to be employed full-time and report higher happiness levels. However, those in lower-paying jobs or with irregular employment patterns report lower life satisfaction, even if their commuting times are shorter. This suggests that employment quality, not just the presence of a job, is a critical factor in the commuting-happiness equation.
+
+* __Commuting Patterns__: The analysis of commuting patterns over time reveals a trend towards shorter commuting distances and times, likely influenced by the rise of remote work and flexible working arrangements. While this shift has the potential to enhance life satisfaction by reducing daily stress and time lost to commuting, the overall impact on happiness also depends on other socio-economic factors, such as income, employment status, and household composition.
+
+* __Income Satisfaction and Life Satisfaction__: The correlation between overall life satisfaction and satisfaction with personal income has weakened over time, suggesting that other factors beyond income, such as work-life balance, commuting time, and personal relationships, are increasingly important in determining overall happiness.
+
+* __Demographics and Happiness__: In my analysis, I did not delve deeply into the detailed correlation between demographic factors and commuting behaviors. However, based on the conducted research and the comparison of the generated graphs, it is possible to draw some insights. The findings suggest that demographic factors such as age, gender, and marital status do play a role in shaping commuting behaviors and their impact on happiness. Specifically, younger respondents, particularly those from more recent data, reported higher life satisfaction despite variations in commuting times, which may reflect greater adaptability or resilience. Additionally, married individuals, who generally have shorter commutes compared to single individuals, tend to report higher levels of happiness. This underscores the influence of social support systems on overall well-being.
+
+All factors examined in this study—demographics, income, education, employment, and commuting—are interconnected in their influence on happiness. Demographics shape commuting behaviors and preferences, which, in turn, affect life satisfaction. Income and education not only determine the quality of employment but also influence the choice of commuting methods and distances. Employment status directly affects commuting patterns, as full-time and stable jobs may require longer commutes, while flexible or remote jobs may reduce the need for commuting altogether.
+
+
+# Appendix
+
+### Variables´ names
+
+ __pequiv.dta__
+
+d11101: Age
+
+d11102ll: Gender
+
+d11104: Marital Status
+
+d11106: Number of persons in HH
+
+d11109: Number of Years of Education
+
+d11108: Education With Respect to High School
+
+__pgen.dta__
+
+pgemplst: Employment Status
+
+ __pl.dta__
+
+plh0175: HH income satisfaction
+
+plb0590: Distance 1. Dwelling - 2. Dwelling
+
+plb0591: Commuting Frequency
+
+plb0592: Commuting Time (Minutes)
+
+ __hgen.dta__
+
+hghinc: Monthly HH income
+
+# References
